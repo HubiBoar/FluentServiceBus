@@ -15,7 +15,12 @@
     </ItemGroup>
     
     <PropertyGroup>
-        <Dotnet>net8.0</Dotnet>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <DefinitVersion>1.0.4</DefinitVersion>
         <MomolithVersion>1.0.0</MomolithVersion>
         <MicrosoftExtensionsVersion>8.0.0</MicrosoftExtensionsVersion>

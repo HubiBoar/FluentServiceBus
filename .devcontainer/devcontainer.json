@@ -14,7 +14,9 @@
 				"ms-dotnettools.csharp",
 				"ms-azuretools.vscode-docker",
 				"yzhang.markdown-all-in-one",
-				"redhat.vscode-yaml"
+				"redhat.vscode-yaml",
+				"AlexDauenhauer.catppuccin-noctis",
+				"Katsute.code-background"
 			]
 		}
 	}
