@@ -43,23 +43,14 @@ public static class RoutingExtensions
         );
     }
 
-    public static void BuildInTheBackground(
+    public static async Task Build(
         this IServiceBusRouter router,
         IServiceCollection services,
         ServiceBusClient client,
         ServiceBusAdministrationClient admin)
     {
-        services.AddHostedService(provider => new ServiceBusRouterHostedService(router, client, admin));
-        services.AddSingleton<IRoutingTopicSender>(provider => new RoutingTopicSender(client.CreateSender(router.RoutingTopicName.Value)));
-    }
+        var routingTopic = await router.Build(client, admin);
 
-    public static void BuildInTheBackground(
-        this IServiceBusRouter router,
-        IServiceCollection services,
-        Func<IServiceProvider, ServiceBusClient> client,
-        Func<IServiceProvider, ServiceBusAdministrationClient> admin)
-    {
-        services.AddHostedService(provider => new ServiceBusRouterHostedService(router, client(provider), admin(provider)));
-        services.AddSingleton<IRoutingTopicSender>(provider => new RoutingTopicSender(client(provider).CreateSender(router.RoutingTopicName.Value)));
+        services.AddSingleton<IPublisher>(routingTopic);
     }
 }

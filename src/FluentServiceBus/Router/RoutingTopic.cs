@@ -5,40 +5,31 @@ using Newtonsoft.Json;
 
 namespace FluentServiceBus;
 
-public interface IMessage
+public sealed class RoutingTopic : IPublisher, IEntity
 {
-    public abstract static string Path { get; }
-}
+    public string Path => Topic.Path;
+    public ServiceBusSender Sender => Topic.Sender;
+    public ServiceBusClient Client => Topic.Client;
+    public ServiceBusAdministrationClient AdministrationClient => Topic.AdministrationClient;
 
+    public Topic Topic { get; }
 
-public interface IRoutingTopicSender
-{
-    Task Send<T>(T message)
-        where T : IMessage;
-
-    Task Send(object message, string path);
-}
-
-public sealed class RoutingTopicSender : IRoutingTopicSender
-{
-    private readonly ServiceBusSender _sender;
-
-    public RoutingTopicSender(ServiceBusSender sender)
+    public RoutingTopic(Topic topic)
     {
-        _sender = sender;
+        Topic = topic;
     }
-
-    public Task Send<T>(T message)
+ 
+    public Task Publish<T>(T message)
         where T : IMessage
     {
-        return Send(message, T.Path);
+        return Publish(message, T.Path);
     }
 
-    public Task Send(object message, string path)
+    public Task Publish(object message, string path)
     {
         var serviceBusMessage = ConvertToMessage(message, path);
 
-        return _sender.SendMessageAsync(serviceBusMessage);
+        return Sender.SendMessageAsync(serviceBusMessage);
     }
 
     private static ServiceBusMessage ConvertToMessage(object message, string path)
@@ -54,26 +45,4 @@ public sealed class RoutingTopicSender : IRoutingTopicSender
 
         return serviceBusMessage;
     }
-}
-
-public sealed class RoutingTopic : IRoutingTopicSender, IEntity
-{
-    public string Path => Topic.Path;
-    public ServiceBusSender Sender => Topic.Sender;
-    public ServiceBusClient Client => Topic.Client;
-    public ServiceBusAdministrationClient AdministrationClient => Topic.AdministrationClient;
-
-    public Topic Topic { get; }
-
-    private readonly RoutingTopicSender _sender;
-
-    public RoutingTopic(Topic topic)
-    {
-        Topic = topic;
-        _sender = new RoutingTopicSender(Sender);
-    }
-
-    public Task Send<T>(T message) where T : IMessage => _sender.Send(message);
-
-    public Task Send(object message, string path) => _sender.Send(message, path);
 }
