@@ -52,9 +52,9 @@ public sealed partial class Queue : IServiceBusEntityPub, IServiceBusEntitySub
         return ServiceBusPublishing.PublishMessage(message, _client, Path, _ => {});
     }
 
-    public Task RegisterConsumer<TMessage>(ServiceBusConsumer<TMessage> subscriber)
+    public Task RegisterConsumer<TMessage>(ServiceBusConsumer<TMessage> consumer, Action<ServiceBusProcessorOptions> modifyProcessor)
         where TMessage : notnull
     {
-        return ServiceBusProcessing.RegisterConsumer(subscriber, _client, (client, options) => client.CreateProcessor(Name.Value, options), _ => {});
+        return ServiceBusProcessing.RegisterConsumer(consumer, _client, (client, options) => client.CreateProcessor(Name.Value, options), modifyProcessor);
     }
 }

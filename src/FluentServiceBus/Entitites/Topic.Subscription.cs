@@ -1,3 +1,4 @@
+using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 
 namespace FluentServiceBus;
@@ -99,10 +100,10 @@ public sealed partial class Topic
             return ParentTopic.AdministrationClient.CreateRuleAsync(topicName, subscriptionName, rule);
         }
 
-        public Task RegisterConsumer<TMessage>(ServiceBusConsumer<TMessage> subscriber)
+        public Task RegisterConsumer<TMessage>(ServiceBusConsumer<TMessage> subscriber, Action<ServiceBusProcessorOptions> modifyProcessor)
             where TMessage : notnull
         {
-            return ServiceBusProcessing.RegisterConsumer(subscriber, ParentTopic.Client, (client, options) => client.CreateProcessor(ParentTopic.Name.Value, Name.Value, options), _ => {});
+            return ServiceBusProcessing.RegisterConsumer(subscriber, ParentTopic.Client, (client, options) => client.CreateProcessor(ParentTopic.Name.Value, Name.Value, options), modifyProcessor);
         }
     }
 }

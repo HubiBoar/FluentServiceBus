@@ -21,6 +21,6 @@ public interface IServiceBusEntityPub : IServiceBusEntity
 
 public interface IServiceBusEntitySub : IServiceBusEntity
 {
-    public Task RegisterConsumer<TMessage>(ServiceBusConsumer<TMessage> subscriber)
+    public Task RegisterConsumer<TMessage>(ServiceBusConsumer<TMessage> consumer, Action<ServiceBusProcessorOptions> modifyProcessor)
         where TMessage : notnull;
 }
