@@ -3,30 +3,27 @@ using Azure.Messaging.ServiceBus.Administration;
 
 namespace FluentServiceBus;
 
-public sealed record TopicName(string Value);
+public sealed record TopicName(string Value) : IServiceBusEntityPub.IPath;
 
-public sealed partial class Topic : IEntity
+public sealed partial class Topic : IServiceBusEntityPub
 {
-    public string Path => Name.Value;
-
     public TopicName Name { get; }
+    public IServiceBusEntityPub.IPath Path => Name;
     public TopicProperties Properties { get; }
 
-    public ServiceBusClient Client { get; }
-    public ServiceBusAdministrationClient AdministrationClient { get; }
-    public ServiceBusSender Sender { get; }
+    private ServiceBusClient Client { get; }
+    private ServiceBusAdministrationClient AdministrationClient { get; }
 
     private Topic(
         ServiceBusClient client,
         ServiceBusAdministrationClient administrationClient,
-        TopicName name,
         TopicProperties properties)
     {
+        Properties = properties;
+        Name = new (Properties.Name);
+
         Client = client;
         AdministrationClient = administrationClient;
-        Name = name;
-        Properties = properties;
-        Sender = client.CreateSender(Path);
     }
 
     public static async Task<Topic> Create(
@@ -39,7 +36,7 @@ public sealed partial class Topic : IEntity
         if (await administrationClient.TopicExistsAsync(topicName))
         {
             var properties = await administrationClient.GetTopicAsync(topicName);
-            return new Topic(client, administrationClient, name, properties); 
+            return new Topic(client, administrationClient, properties); 
         }
         else
         {
@@ -47,7 +44,13 @@ public sealed partial class Topic : IEntity
             setup(options);
             var properties = await administrationClient.CreateTopicAsync(options);
 
-            return new Topic(client, administrationClient, name, properties);
+            return new Topic(client, administrationClient, properties);
         }
+    }
+
+    public Task PublishMessage<TMessage>(TMessage message)
+        where TMessage : notnull
+    {
+        return ServiceBusPublishing.PublishMessage(message, Client, Path, _ => {});
     }
 }

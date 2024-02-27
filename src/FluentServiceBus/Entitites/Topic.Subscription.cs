@@ -1,4 +1,3 @@
-using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 
 namespace FluentServiceBus;
@@ -11,22 +10,45 @@ public sealed partial class Topic
 
     private readonly List<Subscription> _subscriptions = [];
 
-    public sealed class Subscription : IEntity
+    public Task<Subscription> AddSubscription(
+        SubscriptionName name,
+        Action<CreateSubscriptionOptions> setup,
+        params CreateRuleOptions[] rules)
     {
-        public string Path => ParentTopic.Path;
-        public ServiceBusClient Client => ParentTopic.Client;
-        public ServiceBusAdministrationClient AdministrationClient => ParentTopic.AdministrationClient;
-        public ServiceBusSender Sender => ParentTopic.Sender;
+        return Subscription.Create(this, name, setup, rules);
+    }
 
-        public Topic ParentTopic { get; }
+    public Task<Subscription> AddSubscription(SubscriptionName name, string path)
+    {
+        var subscriptionName = name.Value;
+
+        return AddSubscription(
+            name,
+            _ => {},
+            new CreateRuleOptions
+            {
+                Name = "Route",
+                Filter = new SqlRuleFilter($"((sys.to = '{path}') AND (NOT EXISTS (user.SubscriptionName))) OR ((sys.to = '{path}') AND (user.SubscriptionName = '{subscriptionName}'))"),
+                Action = new SqlRuleAction($"SET user.SubscriptionName = '{subscriptionName}'")
+            });
+    }
+
+    public Task<Subscription> AddRoutingSubscription(SubscriptionName name)
+    {
+        return AddSubscription(name, Path.Value);
+    }
+
+    public sealed class Subscription : IServiceBusEntitySub
+    {
         public SubscriptionName Name { get; }
+        public Topic ParentTopic { get; }
         public SubscriptionProperties Properties { get; }
 
-        private Subscription(Topic topic, SubscriptionName path, SubscriptionProperties properties)
+        private Subscription(Topic topic, SubscriptionProperties properties)
         {
             ParentTopic = topic;
-            Name = path;
             Properties = properties;
+            Name = new (Properties.SubscriptionName);
         }
 
         public static async Task<Subscription> Create(
@@ -40,7 +62,7 @@ public sealed partial class Topic
             if (await topic.AdministrationClient.SubscriptionExistsAsync(topicName, subscriptionName))
             {
                 var properties = await topic.AdministrationClient.GetSubscriptionAsync(topicName, subscriptionName);
-                var subscription = new Subscription(topic, name, properties);
+                var subscription = new Subscription(topic, properties);
                 topic._subscriptions.Add(subscription);
                 return subscription;
             }
@@ -58,25 +80,29 @@ public sealed partial class Topic
                     await topic.AdministrationClient.CreateRuleAsync(topicName, subscriptionName, rule);
                 }
 
-                var subscription = new Subscription(topic, name, properties);
+                var subscription = new Subscription(topic, properties);
                 topic._subscriptions.Add(subscription);
                 return subscription;
             }
         }
 
+        public Task PublishMessage<TMessage>(TMessage message)
+            where TMessage : notnull
+        {
+            return ParentTopic.PublishMessage(message);
+        }
+
         public Task AddRule(CreateRuleOptions rule)
         {
             var topicName = ParentTopic.Name.Value;
-            var subscriptionName = this.Name.Value;
+            var subscriptionName = Name.Value;
             return ParentTopic.AdministrationClient.CreateRuleAsync(topicName, subscriptionName, rule);
         }
-    }
 
-    public Task<Subscription> AddSubscription(
-        SubscriptionName name,
-        Action<CreateSubscriptionOptions> setup,
-        params CreateRuleOptions[] rules)
-    {
-        return Subscription.Create(this, name, setup, rules);
+        public Task RegisterConsumer<TMessage>(ServiceBusConsumer<TMessage> subscriber)
+            where TMessage : notnull
+        {
+            return ServiceBusProcessing.RegisterConsumer(subscriber, ParentTopic.Client, (client, options) => client.CreateProcessor(ParentTopic.Name.Value, Name.Value, options), _ => {});
+        }
     }
 }

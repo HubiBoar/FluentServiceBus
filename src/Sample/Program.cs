@@ -1,6 +1,8 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using FluentServiceBus;
+using OneOf.Types;
+using Sample;
 
 var connectionString = "";
 
@@ -8,16 +10,30 @@ var sender = await Build(connectionString);
 
 await sender.Publish(new { Message = "TestMessage" }, "test-topic");
 
-static async Task<IPublisher> Build(string connectionString)
+static async Task<IRouterPublisher> Build(string connectionString)
 {
     var client = new ServiceBusClient(connectionString);
     var administrationClient = new ServiceBusAdministrationClient(connectionString);
 
-    return await ServiceBusRouter
+    var built = await new ServiceBusBuilder()
         .AddQueue(new QueueName("test-queue"))
+            .AddPublisher(out var testQueueSender)
+            .WithConsumer<Message>(async message => new Success())
         .AddTopic(new TopicName("test-topic"))
+            .AddPublisher(out var testTopicSender)
             .AddSubscription(new SubscriptionName("test-subscription"))
             .AddSubscription(new SubscriptionName("test-subscription-2"))
+                .WithConsumer<Message>(async message => new Success())
         .AddQueue(new QueueName("test-qeueue-2"))
-        .Build(client, administrationClient);
+        .BuildRouterWithStore(client, administrationClient);
+
+    await testQueueSender.GetSender(built).Publish(new { Message = "TestQueueMessage" });
+    await testTopicSender.GetSender(built).Publish(new { Message = "TestTopicMessage" });
+
+    return built.Router;
+}
+
+namespace Sample
+{
+    public sealed record Message();
 }
