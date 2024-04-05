@@ -1,7 +1,7 @@
-using OneOf;
 using Azure.Messaging.ServiceBus;
 using System.Text;
 using Newtonsoft.Json;
+using Definit.Results;
 
 namespace FluentServiceBus;
 
@@ -58,7 +58,7 @@ internal sealed class ServiceBusProcessing
         }
         catch (Exception exception)
         {
-            return DeadLetterMessageHelper.Message(args, new DeadLetter(exception.Message));
+            return DeadLetterMessageHelper.Message(args, new Error(exception.Message));
         }
     }
     
@@ -82,7 +82,8 @@ internal sealed class ServiceBusProcessing
         await args.AbandonMessageAsync(message);
     }
 
-    private static OneOf<TMessage, DeadLetter> TryDeserialize<TMessage>(ServiceBusReceivedMessage serviceBusMessage)
+    private static Result<TMessage> TryDeserialize<TMessage>(ServiceBusReceivedMessage serviceBusMessage)
+        where TMessage : notnull
     {
         TMessage message;
         var body = serviceBusMessage.Body.ToArray();
@@ -92,7 +93,7 @@ internal sealed class ServiceBusProcessing
             var newMessage = JsonConvert.DeserializeObject<TMessage>(decodedBody);
             if (newMessage is null)
             {
-                return new DeadLetter("Message deserialization returned null");
+                return new Error("Message deserialization returned null");
             }
             else
             {
@@ -101,7 +102,7 @@ internal sealed class ServiceBusProcessing
         }
         catch (Exception exception)
         {
-            return new DeadLetter($"Encountered exception when trying to deserialize message :: {exception.Message}");
+            return new Error($"Encountered exception when trying to deserialize message :: {exception.Message}");
         }
 
         return message;

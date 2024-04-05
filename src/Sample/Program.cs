@@ -1,7 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
+using Definit.Results;
 using FluentServiceBus;
-using OneOf.Types;
 using Sample;
 
 var connectionString = "";
@@ -18,12 +18,12 @@ static async Task<IRouterPublisher> Build(string connectionString)
     var built = await new ServiceBusBuilder()
         .AddQueue(new QueueName("test-queue"))
             .AddPublisher(out var testQueueSender)
-            .WithConsumer<Message>(async message => new Success())
+            .WithConsumer<Message>(message => Result.Or<Abandon>.Success)
         .AddTopic(new TopicName("test-topic"))
             .AddPublisher(out var testTopicSender)
             .AddSubscription(new SubscriptionName("test-subscription"))
             .AddSubscription(new SubscriptionName("test-subscription-2"))
-                .WithConsumer<Message>(async message => new Success())
+                .WithConsumer<Message>(message => Result.Or<Abandon>.Success)
         .AddQueue(new QueueName("test-qeueue-2"))
         .BuildRouterWithStore(client, administrationClient);
 

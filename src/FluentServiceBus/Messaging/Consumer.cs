@@ -1,11 +1,8 @@
-using OneOf;
-using OneOf.Types;
+using Definit.Results;
 
 namespace FluentServiceBus;
 
 public sealed record Abandon();
 
-public sealed record DeadLetter(string Message);
-
-public delegate Task<OneOf<Success, Abandon, DeadLetter>> ServiceBusConsumer<TMessage>(TMessage message)
+public delegate Task<Result.Or<Abandon>> ServiceBusConsumer<TMessage>(TMessage message)
     where TMessage : notnull;

@@ -1,4 +1,5 @@
 using Azure.Messaging.ServiceBus;
+using Definit.Results;
 using System.Text;
 
 namespace FluentServiceBus;
@@ -7,7 +8,7 @@ internal sealed class DeadLetterMessageHelper
 {
     public static async Task Message(
         ProcessMessageEventArgs client,
-        DeadLetter error)
+        Error error)
     {
         var properties = new Dictionary<string, object>();
 
@@ -16,7 +17,7 @@ internal sealed class DeadLetterMessageHelper
         await client.DeadLetterMessageAsync(client.Message, properties);
     }
     
-    private static void AddDeadLetterProperties(DeadLetter error, IDictionary<string, object> properties)
+    private static void AddDeadLetterProperties(Error error, IDictionary<string, object> properties)
     {
         var message = TrimToByteLength(error.Message, 32000);
 
