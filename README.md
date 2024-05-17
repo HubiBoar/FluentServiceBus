@@ -70,4 +70,4 @@ await router.Publish(new { Message = "TestMessage" }, "test-topic");
 
 ## License
 
-The code in this repo is licensed under the [MIT](LICENSE.TXT) license.
+The code in this repo is licensed under the [MIT](LICENSE) license.
