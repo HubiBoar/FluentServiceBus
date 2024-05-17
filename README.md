@@ -27,6 +27,7 @@ new ServiceBusBuilder()
         .WithConsumer<Message>(message => Result.Or<Abandon>.Success)
     .AddTopic(new TopicName("test-topic"))
         .AddSubscription(new SubscriptionName("test-subscription"))
+             .WithConsumer<Message>(message => Result.Or<Abandon>.Success)
         .AddSubscription(new SubscriptionName("test-subscription-2"))
             .WithConsumer<Message>(message => Result.Or<Abandon>.Success)
 ```
@@ -36,12 +37,9 @@ new ServiceBusBuilder()
 var built = await new ServiceBusBuilder()
       .AddQueue(new QueueName("test-queue"))
           .AddPublisher(out var testQueueSender)
-          .WithConsumer<Message>(message => Result.Or<Abandon>.Success)
       .AddTopic(new TopicName("test-topic"))
           .AddPublisher(out var testTopicSender)
           .AddSubscription(new SubscriptionName("test-subscription"))
-          .AddSubscription(new SubscriptionName("test-subscription-2"))
-              .WithConsumer<Message>(message => Result.Or<Abandon>.Success)
       .Build(client, administrationClient);
 
 await testQueueSender.GetSender(built).Publish(new { Message = "TestQueueMessage" });
