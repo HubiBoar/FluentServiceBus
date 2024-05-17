@@ -1,8 +1,8 @@
 # FluentServiceBus
 
-![Release Status](https://img.shields.io/github/actions/workflow/status/HubiBoar/FluentServiceBus/publish.yml)
-![NuGet Version](https://img.shields.io/nuget/v/FluentServiceBus)
-![NuGet Downloads](https://img.shields.io/nuget/dt/FluentServiceBus)
+[![Release Status](https://img.shields.io/github/actions/workflow/status/HubiBoar/FluentServiceBus/publish.yml)](https://github.com/HubiBoar/FluentServiceBus/actions/workflows/publish.yml)
+[![NuGet Version](https://img.shields.io/nuget/v/FluentServiceBus)](https://www.nuget.org/packages/FluentServiceBus/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/FluentServiceBus)](https://www.nuget.org/packages/FluentServiceBus/)
 
 FluentServiceBus is an library aiming to help setup Azure ServiceBus using an Fluent/LINQ like API.
 
