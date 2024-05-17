@@ -69,7 +69,7 @@ await router.Publish(new { Message = "TestMessage" }, "test-topic");
 ```
 
 ## Samples
-[Sample](src/Sample/Program.cs)
+[src/Sample/Program.cs](src/Sample/Program.cs)
 
 ## License
 
