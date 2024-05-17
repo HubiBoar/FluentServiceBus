@@ -1,5 +1,9 @@
 # FluentServiceBus
 
+![Release Status](https://img.shields.io/github/actions/workflow/status/HubiBoar/FluentServiceBus/publish.yml)
+![NuGet Version](https://img.shields.io/nuget/v/FluentServiceBus)
+![NuGet Downloads](https://img.shields.io/nuget/dt/FluentServiceBus)
+
 FluentServiceBus is an library aiming to help with Azure ServiceBus setup using an Fluent/LINQ like API.
 
 ### Queues
@@ -63,3 +67,7 @@ var router = await new ServiceBusBuilder()
 
 await router.Publish(new { Message = "TestMessage" }, "test-topic");
 ```
+
+## License
+
+The code in this repo is licensed under the [MIT](LICENSE.TXT) license.
