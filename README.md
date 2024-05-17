@@ -1,8 +1,6 @@
 # FluentServiceBus
 
-FluentServiceBus is an library aiming to help with Azure ServiceBus usage.
-
-FluentServiceBus has an LINQ like API which allows to easly create and use different parts of Azure ServiceBus.
+FluentServiceBus is an library aiming to help with Azure ServiceBus setup using an Fluent/LINQ like API.
 
 ### Queues
 ```csharp
