@@ -68,6 +68,9 @@ var router = await new ServiceBusBuilder()
 await router.Publish(new { Message = "TestMessage" }, "test-topic");
 ```
 
+## Samples
+[Sample](src/Sample/Program.cs)
+
 ## License
 
 The code in this repo is licensed under the [MIT](LICENSE) license.
