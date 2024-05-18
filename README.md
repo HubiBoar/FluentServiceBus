@@ -4,7 +4,7 @@
 [![NuGet Version](https://img.shields.io/nuget/v/FluentServiceBus)](https://www.nuget.org/packages/FluentServiceBus/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/FluentServiceBus)](https://www.nuget.org/packages/FluentServiceBus/)
 
-FluentServiceBus is an library aiming to help setup Azure ServiceBus using an Fluent/LINQ like API.
+**FluentServiceBus** is an library aiming to help setup Azure ServiceBus using an Fluent/LINQ like API.
 
 ### Queues
 ```csharp
